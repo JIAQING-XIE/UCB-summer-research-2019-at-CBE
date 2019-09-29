@@ -100,6 +100,7 @@ num_epochs = 100
 acc_scores = []
 loss_scores = []
 all_acc_histories = []
+aaall_loss_histories = []
 for i in range(k):
     print('processing fold #', i)
     val_data = x_train[i * num_val_samples : (i + 1) * num_val_samples]
@@ -120,9 +121,18 @@ for i in range(k):
     acc_scores.append(val_acc)
     loss_scores.append(val_loss)
     acc_history = history.history['acc']
+    loss_history = history.history['loss']
     all_acc_histories.append(acc_history)
+#   all_loss_histories.append(loss_history)
+   
+average_acc_history = [
+    np.mean([x[i] for x i all_acc_histories] for i in range(num_epochs))
+#average_loss_history = [
+    np.mean([y[i] for y in all_loss_histories] for i in range(num_epochs))
     
-
-
-
+import matplotlib.pyplot as plt
+plt.plot(range(1, len(average_acc_history) + 1), average_acc_history)
+#plt.plot(range(1, len(average_loss_history) + 1), averge_loss_history)
+plt.xlabel('Epochs')
+plt.ylabel('Validation accuracy')
 
