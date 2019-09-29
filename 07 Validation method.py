@@ -37,7 +37,7 @@ model.compile(optimizer = 'rmsprop',
               metrics = ['accuracy'])
 
 
-###validation :
+###general validation :
 x_val = x_train[:425]
 partial_x_train = x_train[425:]
 
@@ -49,9 +49,6 @@ history = model.fit(partial_x_train,
                     epochs = 30,
                     batch_size = 100,
                     validation_data = (x_val, y_val))
-
-
-
 ###Making figures
 
 loss = history.history['loss']
@@ -76,10 +73,55 @@ plt.legend()
 plt.show()
 
 
+###k-cross validation
 
+###Add the parameter parameters 
+###In this study, since neuron numbers are 13 in two layers,
+###So we set them as 13 in the Dense(),which can add parameters.
+def build_model():
+    model = models.Sequential()
+    model.add(layers.Dense(13, activation = 'relu', input_shape = (11,)))
+    model.add(layers.Dense(13, activation = 'relu', ))
+    model.add(layers.Dense(3, activation = 'softmax'))
+###Since there are three categories of the output,the parameter is set wo 3
+###softmax is the fuction that can have several outputs unlike sigmoid function.
 
+###In the classification problem, the metrics is accuracy,
+###The loss is "categorical_crossentropy"
+###In the binary case, the loss then will be "binary_crossentropy"
+    model.compile(optimizer = 'rmsprop',
+              loss='categorical_crossentropy',
+              metrics = ['accuracy'])
+    return model
 
-
+k = 20
+num_val_samples = len(x_train)  //k
+num_epochs = 100
+acc_scores = []
+loss_scores = []
+all_acc_histories = []
+for i in range(k):
+    print('processing fold #', i)
+    val_data = x_train[i * num_val_samples : (i + 1) * num_val_samples]
+    val_targets = one_hot_train_labels[i * num_val_samples : (i + 1) * num_val_samples]
+    partial_train_data = np.concatenate(
+        [x_train[: i * num_val_samples],
+         x_train[(i + 1) * num_val_samples:]],
+        axis = 0)
+    partial_train_targets = np.concatenate(
+        [one_hot_train_labels[: i * num_val_samples],
+         one_hot_train_labels[(i + 1) * num_val_samples:]],
+        axis = 0)    
+    model = build_model()
+    
+    history = model.fit(partial_train_data , partial_train_targets,
+             epochs = num_epochs, batch_size = 1 ,verbose = 0)
+    val_loss, val_acc = model.evaluate(val_data, val_targets, verbose = 0)
+    acc_scores.append(val_acc)
+    loss_scores.append(val_loss)
+    acc_history = history.history['acc']
+    all_acc_histories.append(acc_history)
+    
 
 
 
